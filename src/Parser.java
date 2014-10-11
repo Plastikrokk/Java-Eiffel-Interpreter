@@ -1,3 +1,10 @@
+/**
+ * @author David Bingham
+ * @professor Dr. Gayler
+ * @class CS 4150
+ * @assignment Java Interpreter // Project part 1
+ */
+
 import java.io.FileNotFoundException;
 
 public class Parser
@@ -27,7 +34,7 @@ public class Parser
 	private Compound getCompound() throws ParserException, LexicalException
 	{
 		Token tok = lex.getLookaheadToken();
-		if (tok.getTokType() == TokenType.ASSIGN_TOK || tok.getTokType() == TokenType.PRINT_TOK || tok.getTokType() == TokenType.IF_TOK || tok.getTokType() == TokenType.LOOP_TOK)
+		if (tok.getTokType() == TokenType.ID_TOK || tok.getTokType() == TokenType.PRINT_TOK || tok.getTokType() == TokenType.IF_TOK || tok.getTokType() == TokenType.FROM_TOK)
 		{
 			Statement state = getStatement();
 			Compound comp = getCompound();
@@ -37,14 +44,14 @@ public class Parser
 				return new Compound(state, comp);
 		}
 		else 
-			throw new ParserException ("Parser: getCompound: Illegal compound type.");
+			return null;
 	}
 	
 	private Statement getStatement() throws ParserException, LexicalException
 	{
 		Token tok = lex.getLookaheadToken();
 
-		if (tok.getTokType() == TokenType.ASSIGN_TOK) 
+		if (tok.getTokType() == TokenType.ID_TOK) 
 			return getAssignStatement();
 			
 		else if (tok.getTokType() == TokenType.PRINT_TOK)
@@ -53,16 +60,15 @@ public class Parser
 		else if (tok.getTokType() == TokenType.IF_TOK)
 			 return getIfStatement();
 			
-		else if (tok.getTokType() == TokenType.LOOP_TOK)
+		else if (tok.getTokType() == TokenType.FROM_TOK)
 			return getLoopStatement();
 			
 		else 
-			throw new ParserException ("Parser: getStatement: Illegal statement type.");
+			throw new ParserException ("Parser: getStatement: Illegal statement type." + tok.getRowNumber() + ", " + tok.getColumnNumber());
 	}
 	
 	private Assignment getAssignStatement() throws ParserException, LexicalException
 	{
-		Assignment assign;
 		Id var = getId();
 		Token tok = lex.getNextToken();
 		if (tok.getTokType() == TokenType.ASSIGN_TOK)
@@ -73,7 +79,6 @@ public class Parser
 	
 	private Loop_Statement getLoopStatement() throws ParserException, LexicalException
 	{
-		Loop_Statement loopState;
 		Token tok = lex.getNextToken();
 		if (tok.getTokType() == TokenType.FROM_TOK)
 		{
@@ -104,11 +109,11 @@ public class Parser
 	
 	private If_Statement getIfStatement() throws ParserException, LexicalException
 	{
-		If_Statement ifState;
 		Token tok = lex.getNextToken();
 		if (tok.getTokType() == TokenType.IF_TOK)
 		{
-			Boolean_Expression bool = getBooleanExpression();			tok = lex.getNextToken();
+			Boolean_Expression bool = getBooleanExpression();
+			tok = lex.getNextToken();
 			if (tok.getTokType() == TokenType.THEN_TOK)
 			{
 				Compound comp1 = getCompound();
@@ -135,8 +140,21 @@ public class Parser
 	private Print_Statement getPrintStatement() throws ParserException, LexicalException
 	{
 		Token tok = lex.getNextToken();
-		if (tok.getTokType() == TokenType.PRINT_TOK)		{
-			Expression expr = getExpression();
+		Expression expr;
+		if (tok.getTokType() == TokenType.PRINT_TOK)
+		{
+			tok = lex.getNextToken();
+			if(tok.getTokType() == TokenType.LPAR_TOK)
+			{	
+				expr = getExpression();
+				tok = lex.getNextToken();
+				if (tok.getTokType() == TokenType.RPAR_TOK) {}
+				else
+					throw new ParserException ("')' expected at line number " + tok.getRowNumber() + " and column number " + tok.getColumnNumber());
+			}
+			else
+				throw new ParserException ("'(' expected at line number " + tok.getRowNumber() + " and column number " + tok.getColumnNumber());
+
 			return new Print_Statement(expr);
 		}	
 		else
@@ -146,40 +164,7 @@ public class Parser
 	
 	private Boolean_Expression getBooleanExpression() throws ParserException, LexicalException
 	{
-		Relational_Operator rp;
-		Token tok = lex.getLookaheadToken();
-		if (tok.getTokType() == TokenType.LE_TOK)
-		{
-			//match (tok, TokenType.LE_TOK);
-			rp = Relational_Operator.le_operator;
-		}
-		else if (tok.getTokType() == TokenType.LT_TOK)
-		{
-			//match (tok, TokenType.LT_TOK);
-			rp = Relational_Operator.lt_operator;
-		}
-		else if (tok.getTokType() == TokenType.GE_TOK)
-		{
-			//match (tok, TokenType.GE_TOK);
-			rp = Relational_Operator.ge_operator;
-		}
-		else if (tok.getTokType() == TokenType.GT_TOK)
-		{
-			//match (tok, TokenType.GT_TOK);
-			rp = Relational_Operator.gt_operator;
-		}
-		else if (tok.getTokType() == TokenType.EQ_TOK)
-		{
-			//match (tok, TokenType.EQ_TOK);
-			rp = Relational_Operator.eq_operator;
-		}
-		else if (tok.getTokType() == TokenType.NE_TOK)
-		{
-			//match (tok, TokenType.NE_TOK);
-			rp = Relational_Operator.ne_operator;
-		}
-		else 
-			throw new ParserException ("Relational Operarator expected at line number " + tok.getRowNumber() + " and column number " + tok.getColumnNumber());
+		Relational_Operator rp = getRelationalOperator();
 		Expression expr1 = getExpression();
 		Expression expr2 = getExpression();
 		return new Boolean_Expression (rp, expr1, expr2);
@@ -225,30 +210,7 @@ public class Parser
 	
 	private Expression getBinaryExpression() throws ParserException, LexicalException
 	{
-		ArithmeticOperator op;
-		Token tok = lex.getNextToken();
-		if (tok.getTokType() == TokenType.ADD_TOK)
-		{
-			match (tok, TokenType.ADD_TOK);
-			op = ArithmeticOperator.ADD_OP;
-		}
-		else if (tok.getTokType() == TokenType.SUB_TOK)
-		{
-			match (tok, TokenType.SUB_TOK);
-			op = ArithmeticOperator.SUB_OP;
-		}
-		else if (tok.getTokType() == TokenType.MUL_TOK)
-		{
-			match (tok, TokenType.MUL_TOK);
-			op = ArithmeticOperator.MUL_OP;
-		}
-		else if (tok.getTokType() == TokenType.DIV_TOK)
-		{
-			match (tok, TokenType.DIV_TOK);
-			op = ArithmeticOperator.DIV_OP;
-		}
-		else
-			throw new ParserException (" operator expected at row " + tok.getRowNumber() + " and column " + tok.getColumnNumber());
+		ArithmeticOperator op = getArithmeticOperator();
 		Expression expr1 = getExpression();
 		Expression expr2 = getExpression();
 		return new BinaryExpression (op, expr1, expr2);
@@ -257,7 +219,7 @@ public class Parser
 	private Expression getExpression() throws ParserException, LexicalException
 	{
 		Expression expr;
-		Token tok = lex.getNextToken();
+		Token tok = lex.getLookaheadToken();
 		if (tok.getTokType() == TokenType.ID_TOK || tok.getTokType() == TokenType.LIT_INT_TOK)
 			expr = getUrnaryExpression();
 		else
@@ -268,7 +230,7 @@ public class Parser
 	private Expression getUrnaryExpression() throws ParserException, LexicalException
 	{
 		Expression expr;
-		Token tok = lex.getNextToken();
+		Token tok = lex.getLookaheadToken();
 		if (tok.getTokType() == TokenType.ID_TOK)
 			expr = getId();
 		else if (tok.getTokType() == TokenType.LIT_INT_TOK)

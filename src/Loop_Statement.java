@@ -1,3 +1,10 @@
+/**
+ * @author David Bingham
+ * @professor Dr. Gayler
+ * @class CS 4150
+ * @assignment Java Interpreter // Project part 1
+ */
+
 /*
  * <loop_statement> -> from <assignment_statement> until <boolean_expression> loop <compound> end
  */

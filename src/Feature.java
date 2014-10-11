@@ -1,3 +1,14 @@
+/**
+ * @author David Bingham
+ * @professor Dr. Gayler
+ * @class CS 4150
+ * @assignment Java Interpreter // Project part 1
+ */
+
+/**
+ * <feature> -> feature <id> is do <compound> end
+ */
+
 public class Feature {
 	
 	private Compound comp; //<compound> -> <statement> | <compound><statement>
@@ -8,9 +19,6 @@ public class Feature {
 	* @param comp - cannot be null
 	* @param var - cannot be null
 	* @throws IllegalArgumentException if either argument is null
-	*
-	*
-	*<feature> -> feature <id> is do <compound> end
 	*/
 	public Feature(Id var, Compound comp)
 	{
@@ -21,5 +29,7 @@ public class Feature {
 		this.var = var;
 	}
 	
-	public void execute() {}
+	public void execute() {
+		comp.execute();
+	}
 }

@@ -1,9 +1,15 @@
+/**
+ * @author David Bingham
+ * @professor Dr. Gayler
+ * @class CS 4150
+ * @assignment Java Interpreter // Project part 1
+ */
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-
 
 public class LexicalAnalyzer {
 	private List<Token> tokens;
@@ -37,17 +43,12 @@ public class LexicalAnalyzer {
 		}
 	}
 	
-	private TokenType getTokenType (String line, int lineNumber, int columnNumber) throws LexicalException 
+	private TokenType getTokenType (String lexeme, int lineNumber, int columnNumber) throws LexicalException 
 	{
 		TokenType tokType = null;
 		int index = 0;
 		if (Character.isLetter (lexeme.charAt(0)))
 		{
-			int i = index;
-			while (i < line.length() && (Character.isLetter(lexeme.charAt(i))))
-				i++;
-			lexeme = line.substring(index, i);
-			index = i;
 			if(lexeme.equals("feature"))
 				tokType=TokenType.FEATURE_TOK;
 			else if(lexeme.equals("is"))
@@ -73,7 +74,9 @@ public class LexicalAnalyzer {
 			else if(lexeme.length()==1)
 				tokType=TokenType.ID_TOK;
 			else
-				throw new LexicalException ("invalid lexeme");
+			{
+				throw new LexicalException("invalid lexeme" + lineNumber + "," + columnNumber);
+			}
 		}
 		else if (Character.isDigit (lexeme.charAt(0)))
 		{
@@ -84,12 +87,7 @@ public class LexicalAnalyzer {
 		}
 		else
 		{
-			int i = index;
-			while (i < line.length() && !Character.isLetterOrDigit(line.charAt(i)) &&  !Character.isSpaceChar(line.charAt(i)))
-			i++;
-			lexeme = line.substring(index, i);
-			index = i;
-			else if (lexeme.equals(":="))
+			if (lexeme.equals(":="))
 				tokType = TokenType.ASSIGN_TOK;
 			else if (lexeme.equals("<="))
 				tokType = TokenType.LE_TOK;
@@ -111,6 +109,10 @@ public class LexicalAnalyzer {
 				tokType = TokenType.MUL_TOK;
 			else if (lexeme.equals("/"))
 				tokType = TokenType.DIV_TOK;
+			else if (lexeme.equals("("))
+				tokType = TokenType.LPAR_TOK;
+			else if (lexeme.equals(")"))
+				tokType = TokenType.RPAR_TOK;
 			else 
 				throw new LexicalException ("Invalid lexeme at row number " + (lineNumber+1) + " and column " + (columnNumber+1));
 		}

@@ -1,3 +1,9 @@
+/**
+ * @author David Bingham
+ * @professor Dr. Gayler
+ * @class CS 4150
+ * @assignment Java Interpreter // Project part 1
+ */
 
 public class Id implements Expression
 {
@@ -10,8 +16,7 @@ public class Id implements Expression
 	 */
 	public Id(char ch)
 	{
-		
-		this.ch = ch;
+		this.ch = Character.toLowerCase(ch);
 	}
 
 	@Override
@@ -23,6 +28,11 @@ public class Id implements Expression
 	public char getChar ()
 	{
 		return ch;
+	}
+	
+	public void setValue (int value)
+	{
+		Memory.store(ch, value);
 	}
 
 }

@@ -1,36 +1,30 @@
+/**
+ * @author David Bingham
+ * @professor Dr. Gayler
+ * @class CS 4150
+ * @assignment Java Interpreter // Project part 1
+ */
+
 public class Memory
 {
-
-	private static int[] mem = {0,0,0};
+	private static int[] mem = new int[26];
 	
 	/**
-	 * @param ch - must be a valid identifier
-	 * @return value of ch
-	 * @throws IllegalArgumentException if ch is not a valid identifier
+	 * @param ch
+	 * @return value stored for specified variable
 	 */
-	public static int fetch (char ch)
+	public static int fetch(char ch)
 	{
-		return mem[getIndex(ch)];
+		return mem[ch - 'a'];
 	}
 	
 	/**
-	 * @param ch - must be a valid identifier
-	 * @param value
-	 * @throws IllegalArgumentException if ch is not a valid identifier
+	 * postcondition: value has been stored as the value of the specified variable
+	 * @param ch
+	 * @return value
 	 */
 	public static void store (char ch, int value)
 	{
-		mem[getIndex(ch)] = value;
-	}
-	
-	private static int getIndex (char ch)
-	{
-				return ch - 'A';
-	}
-	
-	public static void displayMemory()
-	{
-		for (int i = 0; i < 3; i++)
-			System.out.println ((char)('A' + i) + ": " + mem[i]);
+		mem[ch - 'a'] = value;
 	}
 }
